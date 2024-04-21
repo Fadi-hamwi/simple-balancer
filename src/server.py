@@ -9,11 +9,11 @@ def get_server_lst():
         for container in client.containers.list():
             container_attrs = container.attrs
             container_name = container_attrs['Name'].lstrip('/')  # Remove leading '/' from container name
-            ip_address = container_attrs['NetworkSettings']['IPAddress']
-            mac_address = container_attrs['NetworkSettings']['MacAddress']
-            port_mapping = container_attrs['HostConfig']['PortBindings'] if 'PortBindings' in container_attrs[
-                'HostConfig'] else {}
+            ip_address = container_attrs['NetworkSettings']['Networks']['testing']['IPAddress']
+            mac_address = container_attrs['NetworkSettings']['Networks']['testing']['MacAddress']
+            port_mapping = container_attrs['NetworkSettings']['Ports']
             # Construct server dictionary
+            # print("DEBUG: ", container_attrs['NetworkSettings'])
             server_info = {
                 'Name': container_name,
                 'IP': ip_address,

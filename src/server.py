@@ -1,19 +1,24 @@
-import os
+import dockerize
 import docker
 
+client = docker.from_env()
 
-def get_server_lst():
+
+def update_server_lst():
     servers = []
+    network = client.networks.get(dockerize.NETWORK_NAME)
     try:
-        client = docker.from_env()
-        for container in client.containers.list():
+        """ we only lookup the containers connected to the network 
+        because not all containers are web servers and we know for a fact 
+        that all the containers connected the network are web servers.
+        """
+        for container in network.containers:
             container_attrs = container.attrs
             container_name = container_attrs['Name'].lstrip('/')  # Remove leading '/' from container name
-            ip_address = container_attrs['NetworkSettings']['Networks']['testing']['IPAddress']
-            mac_address = container_attrs['NetworkSettings']['Networks']['testing']['MacAddress']
+            ip_address = container_attrs['NetworkSettings']['Networks'][dockerize.NETWORK_NAME]['IPAddress']
+            mac_address = container_attrs['NetworkSettings']['Networks'][dockerize.NETWORK_NAME]['MacAddress']
             port_mapping = container_attrs['NetworkSettings']['Ports']
             # Construct server dictionary
-            # print("DEBUG: ", container_attrs['NetworkSettings'])
             server_info = {
                 'Name': container_name,
                 'IP': ip_address,
@@ -28,5 +33,5 @@ def get_server_lst():
 
 
 if __name__ == "__main__":
-    os.environ["SERVER_LST"] = '/home/conehead/server_lst.txt'
-    print(get_server_lst())
+    client = docker.from_env()
+    print(update_server_lst())
